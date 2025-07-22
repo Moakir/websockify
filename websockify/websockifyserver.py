@@ -22,6 +22,8 @@ import signal
 import socket
 import sys
 import time
+from urllib.parse import urlparse
+from urllib.parse import parse_qs
 
 # Degraded functionality if these imports are missing
 try:
@@ -246,6 +248,11 @@ class WebSockifyRequestHandler(WebSocketRequestHandlerMixIn, SimpleHTTPRequestHa
             # Record raw frame data as JavaScript array
             fname = "%s.%s" % (self.record,
                                self.handler_id)
+            args = parse_qs(urlparse(self.path)[4])  # 4 is the query from url
+
+            if 'session_id' in args and len(args['session_id']):
+                fname = "%s.%s" % (self.record,args['session_id'][0].rstrip('\n'))
+
             self.log_message("opening record file: %s", fname)
             self.rec = open(fname, 'w+')
             self.rec.write("var VNC_frame_data = [\n")
